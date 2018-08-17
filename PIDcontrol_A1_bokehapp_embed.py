@@ -1,12 +1,11 @@
 import numpy as np
 import time
-from bokeh.io import curdoc
 from bokeh.layouts import row, widgetbox
 from bokeh.models.widgets import Slider, Select, Div
 from bokeh.plotting import figure
 from bokeh.server.server import Server
 
-timesteps = 50
+timesteps = 100
 samplingtime = 0.2
 maxsetpoint = 1.0
 timepoints = []
@@ -14,10 +13,10 @@ outputs = []
 setpoints = []
 errors = []
 
-timepoints = np.zeros(50)
-outputs = np.zeros(50)
-setpoints = np.zeros(50)
-errors = np.zeros(50)
+timepoints = np.zeros(timesteps)
+outputs = np.zeros(timesteps)
+setpoints = np.zeros(timesteps)
+errors = np.zeros(timesteps)
 
 class PID:
     def __init__(self, P, I, D):
@@ -73,8 +72,8 @@ def modify_doc(doc):
                  line_width=2)
     r3 = p2.line(timepoints, errors, line_color='indigo', legend='error',
                  line_width=2)
-    p1.legend.location = 'bottom_center'
-    p2.legend.location = 'top_right'
+    p1.legend.location = 'top_left'
+    p2.legend.location = 'top_left'
 
     # Setup widgets
     Kp = Slider(title='Kp', value=0.75, start=0.0, end=1.5, step=0.15)
@@ -96,16 +95,19 @@ def modify_doc(doc):
             # Inputs
             if inputfunc == 'step':
                 # step function
-                if nn > 15:
+                if nn > 30:
                     pid.setpoint = maxsetpoint
             elif inputfunc == 'square':
                 # square wave
-                pid.setpoint = maxsetpoint * np.sign(np.sin(4 * np.pi * nn / timesteps))
+                if nn > 30:
+                    pid.setpoint = maxsetpoint * np.sign(np.sin(4 * np.pi * (nn - 30) / timesteps))
             elif inputfunc == 'sine':
                 # sine wave
-                pid.setpoint = maxsetpoint * np.sin(4 * np.pi * nn / timesteps)
+                if nn > 30:
+                    pid.setpoint = maxsetpoint * np.sin(4 * np.pi * (nn - 30) / timesteps)
             # Outputs    
-            pid.processval = pid.processval + (pid.controlvar - (1.0 / nn))
+            if nn > 30:
+                pid.processval = pid.processval + (pid.controlvar - (1.0 / nn))
             pid.controlLoop()
             global outputs
             outputs[nn] = pid.processval
@@ -132,8 +134,6 @@ def modify_doc(doc):
     
     doc.add_root(row(wInputs, p1, p2, width=1000))
  
-#curdoc().add_root(row(wInputs, p1, p2, width=1000))
-#curdoc().title = 'PID Control Demo'
 server = Server({'/': modify_doc}, num_procs=1)
 server.start()
 
