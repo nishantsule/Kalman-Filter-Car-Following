@@ -169,7 +169,7 @@ def modify_doc(doc):
         f.P = np.array([[1000.0, 0.0],
                         [0.0, 1000.0]])
         f.R = np.array([[5.0]])
-        f.Q = Q_discrete_white_noise(dim=2, dt=dt, var=PN)  # Process noise
+        f.Q = Q_discrete_white_noise(dim=2, dt=dt, var=PN**2)  # Process noise
         
         # Loop for updating positions
         for tt in range(timesteps):        
