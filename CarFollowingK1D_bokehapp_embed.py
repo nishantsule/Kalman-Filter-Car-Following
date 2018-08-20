@@ -4,7 +4,8 @@ from filterpy.kalman import KalmanFilter
 from filterpy.common import Q_discrete_white_noise
 from bokeh.plotting import figure 
 from bokeh.layouts import row, column, widgetbox
-from bokeh.models.widgets import Slider, Div
+from bokeh.models.widgets import Slider, Div, Button
+from bokeh.events import ButtonClick
 from bokeh.server.server import Server
 from bokeh.models import Label
 
@@ -87,11 +88,15 @@ def modify_doc(doc):
 
     # Figure 2
     p3 = figure(plot_width=1000, plot_height=150, x_axis_label='position', title='Car Following Animation',
-                x_range=[0, dist_size], y_range=[-0.4, 1.0])
+                x_range=[0, dist_size], y_range=[-0.4, 0.4])
     colors = ['darkslategray', 'gold', 'crimson']
     r31 = p3.rect(x=[car1_initpos, car2_initpos, car2_initpos], y=[0.0, -0.2, 0.2], 
                   width=car_size, height=8, color=colors, 
                   width_units='data', height_units='screen')
+    r32 = p3.line(x=[car1_initpos - car_size / 2, car1_initpos - car_size / 2],
+                  y=[-0.4, 0.4])
+    r33 = p3.line(x=[car1_initpos + car_size / 2 - dist_sep, car1_initpos + car_size / 2 - dist_sep], 
+                  y=[-0.4, 0.4])
     p3.yaxis.visible = False
     p3.ygrid.visible = False
     p3.toolbar.logo = None
@@ -113,7 +118,7 @@ def modify_doc(doc):
 
     # Figure 4
     p5 = figure(plot_width=500, plot_height=200, x_axis_label='time', y_axis_label='separation',
-                title='Car Separations', x_range=[0, timesteps * dt], y_range=[0, 4 * dist_sep])
+                title='Car Separations', x_range=[0, timesteps * dt], y_range=[0, 3 * dist_sep])
     r51 = p5.line(timepoints, car_sep, color='gold', line_width=4)
     r52 = p5.line(timepoints, car_sep_kf, color='crimson', line_width=4)
     p5.toolbar.logo = None
@@ -121,7 +126,8 @@ def modify_doc(doc):
     
     # Figure 5
     p6 = figure(plot_width=500, plot_height=200, x_axis_label='time', y_axis_label='acceleration',
-                title='Following Car Accelerations', x_range=[0, timesteps * dt], y_range=[-car2_maxbrake, car2_maxacc])
+                title='Following Car Accelerations', x_range=[0, timesteps * dt], 
+                y_range=[-car2_maxbrake / 2, car2_maxacc])
     r61 = p6.line(timepoints, car2_acc, color='gold', line_width=4)
     r62 = p6.line(timepoints, car2_acc_kf, color='crimson', line_width=4)
     p6.toolbar.logo = None
@@ -130,9 +136,11 @@ def modify_doc(doc):
     # Setup widgets
     procnoise_slider = Slider(title='Process Noise', value=0.5, start=0.1, end=1.5, step=0.1)
     measnoise_slider = Slider(title='Measurement Noise', value=0.5, start=0.1, end=1.5, step=0.1)
-    TextDisp = Div(text='''<b>Note:</b> Wait for the plots to stop updating before changing inputs.''')
+    TextDisp = Div(text='''<b>Note:</b> Wait for the plots to stop updating before hitting Start.''')
+    StartButton = Button(label='Start', button_type="success")
 
-    def RunCarFollowing(attr, old, new):        
+    #def RunCarFollowing(attr, old, new):        
+    def RunCarFollowing(event):        
         # Get current widget values
         PN = procnoise_slider.value
         MN = measnoise_slider.value
@@ -234,6 +242,8 @@ def modify_doc(doc):
             # Update plots
             #first row
             r31.data_source.data['x'] = [pos1real, pos2, pos2_kf]
+            r32.data_source.data['x'] = [pos1real - car_size / 2, pos1real - car_size / 2]
+            r33.data_source.data['x'] = [pos1real + car_size / 2 - dist_sep, pos1real + car_size / 2 - dist_sep]
             #second row
             r41.data_source.data['x'] = timepoints
             r41.data_source.data['y'] = poscar1
@@ -257,11 +267,9 @@ def modify_doc(doc):
             time.sleep(0.1)
 
     # Setup callbacks
-    for d in [procnoise_slider, measnoise_slider]:
-        d.on_change('value', RunCarFollowing)
- 
+    StartButton.on_event(ButtonClick, RunCarFollowing)
     # Setup layout and add to document
-    wInputs = widgetbox(procnoise_slider, measnoise_slider, TextDisp)    
+    wInputs = widgetbox(procnoise_slider, measnoise_slider, TextDisp, StartButton)    
 
     doc.add_root(column(row(p1, p2, wInputs), p3, row(p4, column(p5, p6))))
 

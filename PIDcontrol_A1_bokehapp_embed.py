@@ -1,7 +1,8 @@
 import numpy as np
 import time
 from bokeh.layouts import row, widgetbox
-from bokeh.models.widgets import Slider, Select, Div
+from bokeh.models.widgets import Slider, Select, Div, Button
+from bokeh.events import ButtonClick
 from bokeh.plotting import figure
 from bokeh.server.server import Server
 
@@ -80,9 +81,10 @@ def modify_doc(doc):
     Ki = Slider(title='Ki', value=0.5, start=0.0, end=1.0, step=0.1)
     Kd = Slider(title='Kd', value=0.05, start=0.0, end=0.1, step=0.01)
     InputFunction = Select(title='Input Function', value='step', options=['step', 'square', 'sine'])
-    TextDisp = Div(text='''<b>Note:</b> Wait for the plots to stop updating before changing inputs.''')
+    TextDisp = Div(text='''<b>Note:</b> Wait for the plots to stop updating before hitting Start.''')
+    StartButton = Button(label='Start', button_type='success')
 
-    def runPID(attrname, old, new):
+    def RunPID(event):
         # Get current widget values
         kp = Kp.value
         ki = Ki.value
@@ -126,11 +128,10 @@ def modify_doc(doc):
             r3.data_source.data['y'] = errors
     
     # Setup callbacks
-    for d in [Kp, Ki, Kd, InputFunction]:
-        d.on_change('value', runPID)
+    StartButton.on_event(ButtonClick, RunPID)
     
     # Setup layout and add to document
-    wInputs = widgetbox(InputFunction, Kp, Ki, Kd, TextDisp)
+    wInputs = widgetbox(InputFunction, Kp, Ki, Kd, TextDisp, StartButton)
     
     doc.add_root(row(wInputs, p1, p2, width=1000))
  
