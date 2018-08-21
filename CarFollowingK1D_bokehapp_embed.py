@@ -10,7 +10,7 @@ from bokeh.server.server import Server
 from bokeh.models import Label
 
 # Initial values
-dist_size = 20
+dist_size = 30
 car_size = 1
 car1_initpos = 3
 car2_initpos = 0
