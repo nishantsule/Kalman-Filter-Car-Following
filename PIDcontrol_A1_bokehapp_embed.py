@@ -1,7 +1,7 @@
 import numpy as np
 import time
 from bokeh.layouts import row, widgetbox
-from bokeh.models.widgets import Slider, Select, Div, Button
+from bokeh.models.widgets import Slider, Select, Div, Button, Toggle
 from bokeh.events import ButtonClick
 from bokeh.plotting import figure
 from bokeh.server.server import Server
@@ -64,7 +64,8 @@ def modify_doc(doc):
 
     # Setup plots
     p1 = figure(plot_width=400, plot_height=300, x_axis_label='time',
-                x_range=[0, timesteps * samplingtime], title='PID controller input and output')
+                x_range=[0, timesteps * samplingtime], y_range=[-maxsetpoint, maxsetpoint],
+                title='PID controller input and output')
     p2 = figure(plot_width=400, plot_height=300, x_axis_label='time',
                 x_range=[0, timesteps * samplingtime], title='PID controller error')
     r1 = p1.line(timepoints, setpoints, line_color='cornflowerblue', legend='input',
@@ -80,7 +81,7 @@ def modify_doc(doc):
     Kp = Slider(title='Kp', value=0.75, start=0.0, end=1.5, step=0.15)
     Ki = Slider(title='Ki', value=0.5, start=0.0, end=1.0, step=0.1)
     Kd = Slider(title='Kd', value=0.05, start=0.0, end=0.1, step=0.01)
-    InputFunction = Select(title='Input Function', value='step', options=['step', 'square', 'sine'])
+    InputFunction = Select(title='Input Function', value='step', options=['noise', 'step', 'square', 'sine'])
     TextDisp = Div(text='''<b>Note:</b> Wait for the plots to stop updating before hitting Start.''')
     StartButton = Button(label='Start', button_type='success')
 
@@ -95,6 +96,10 @@ def modify_doc(doc):
         pid.initialize()
         for nn in range(1, timesteps, 1):
             # Inputs
+            if inputfunc == 'noise':
+                # null input
+                if nn > 30:
+                    pid.setpoint = 0.5 * np.random.randn()
             if inputfunc == 'step':
                 # step function
                 if nn > 30:
