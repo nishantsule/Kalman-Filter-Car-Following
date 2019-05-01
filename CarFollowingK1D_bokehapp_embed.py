@@ -107,9 +107,9 @@ def modify_doc(doc):
                 title='Car Positions', x_range=[0, timesteps * dt], y_range=[0, dist_size])
     r41 = p4.line(timepoints, poscar1, color='darkslategray', line_width=4)
     r42 = p4.line(timepoints, poscar1_meas, color='royalblue', 
-                 legend='Measured position', line_width=2)
+                 legend='Measured position', line_width=4)
     r43 = p4.line(timepoints, poscar1_est, color='skyblue', 
-                 legend='KF estimated position', line_width=2)
+                 legend='KF estimated position', line_width=4)
     r44 = p4.line(timepoints, poscar2, color='gold', line_width=4)
     r45 = p4.line(timepoints, poscar2_kf, color='crimson', line_width=4)
     p4.legend.location = 'bottom_right'
@@ -137,6 +137,14 @@ def modify_doc(doc):
     procnoise_slider = Slider(title='Process Noise', value=0.5, start=0.1, end=1.5, step=0.1)
     measnoise_slider = Slider(title='Measurement Noise', value=0.5, start=0.1, end=1.5, step=0.1)
     TextDisp = Div(text='''<b>Note:</b> Wait for the plots to stop updating before hitting Start.''')
+    TextDesc = Div(text='''This simulation shows how Kalman Filtering can be used to improve autonomous car following. 
+		   The red car uses a Kalman filter to filter out noise inherent in the detection of the car in the front.
+                   You can increase or decrease the noise level by dragging the sliders.
+                   The yellow car uses the raw sensor data. Both cars aim to achieve a fixed separation between itself and
+                   (vertical blue line in the Car Following Animation) the leading car. 
+                   The plots below show car positions, separations, and accelarations.
+                   You can learn more about Kalman filter in the course <b>ES/AM 115</b> ''', width=1000)
+    TextTitle = Div(text='''<b>KALMAN FILTER FOR AUTONOMOUS CAR FOLLOWING</b>''', width=1000)
     StartButton = Button(label='Start', button_type="success")
 
     #def RunCarFollowing(attr, old, new):        
@@ -264,14 +272,14 @@ def modify_doc(doc):
             r62.data_source.data['x'] = timepoints
             r62.data_source.data['y'] = car2_acc_kf
     
-            time.sleep(0.1)
+            time.sleep(0.05)
 
     # Setup callbacks
     StartButton.on_event(ButtonClick, RunCarFollowing)
     # Setup layout and add to document
     wInputs = widgetbox(procnoise_slider, measnoise_slider, TextDisp, StartButton)    
 
-    doc.add_root(column(row(p1, p2, wInputs), p3, row(p4, column(p5, p6))))
+    doc.add_root(column(TextTitle, TextDesc, row(p1, p2, wInputs), p3, row(p4, column(p5, p6))))
 
 server = Server({'/': modify_doc}, num_procs=1)
 server.start()
