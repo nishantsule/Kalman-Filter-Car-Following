@@ -138,12 +138,12 @@ def modify_doc(doc):
     measnoise_slider = Slider(title='Measurement Noise', value=0.5, start=0.1, end=1.5, step=0.1)
     TextDisp = Div(text='''<b>Note:</b> Wait for the plots to stop updating before hitting Start.''')
     TextDesc = Div(text='''This simulation shows how Kalman Filtering can be used to improve autonomous car following. 
-		   The red car uses a Kalman filter to filter out noise inherent in the detection of the car in the front.
+                   The red car uses a Kalman filter to filter out noise inherent in the detection of the car in the front.
                    You can increase or decrease the noise level by dragging the sliders.
                    The yellow car uses the raw sensor data. Both cars aim to achieve a fixed separation between itself and
                    (vertical blue line in the Car Following Animation) the leading car. 
-                   The plots below show car positions, separations, and accelarations.
-                   You can learn more about Kalman filter in the course <b>ES/AM 115</b> ''', width=1000)
+                   The plots below show car positions, separations, and accelarations.''', width=1000)
+    textrel = Div(text='''Learn more about Kalman filters and their applications in <b>ES/AM 115</b> ''', width=1000)
     TextTitle = Div(text='''<b>KALMAN FILTER FOR AUTONOMOUS CAR FOLLOWING</b>''', width=1000)
     StartButton = Button(label='Start', button_type="success")
 
@@ -279,7 +279,7 @@ def modify_doc(doc):
     # Setup layout and add to document
     wInputs = widgetbox(procnoise_slider, measnoise_slider, TextDisp, StartButton)    
 
-    doc.add_root(column(TextTitle, TextDesc, row(p1, p2, wInputs), p3, row(p4, column(p5, p6))))
+    doc.add_root(column(TextTitle, TextDesc, row(p1, p2, wInputs), p3, row(p4, column(p5, p6)), textrel))
 
 server = Server({'/': modify_doc}, num_procs=1)
 server.start()
