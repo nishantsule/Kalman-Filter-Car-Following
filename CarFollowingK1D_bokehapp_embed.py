@@ -143,7 +143,7 @@ def modify_doc(doc):
                    The yellow car uses the raw sensor data. Both cars aim to achieve a fixed separation between itself and
                    (vertical blue line in the Car Following Animation) the leading car. 
                    The plots below show car positions, separations, and accelarations.''', width=1000)
-    textrel = Div(text='''Learn more about Kalman filters and their applications in <b>ES/AM 115</b> ''', width=1000)
+    textrel = Div(text='''Learn more about this app works, Kalman filters, and their applications in <b>ES/AM 115</b> ''', width=1000)
     TextTitle = Div(text='''<b>KALMAN FILTER FOR AUTONOMOUS CAR FOLLOWING</b>''', width=1000)
     StartButton = Button(label='Start', button_type="success")
 
