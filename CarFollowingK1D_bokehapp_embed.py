@@ -176,15 +176,15 @@ def modify_doc(doc):
         r22.data_source.data['y'] = pdf_meas
         
         # Initialize Kalman Filter
-        f = KalmanFilter(dim_x=2, dim_z=1)
+        f = KalmanFilter(dim_x=2, dim_z=1)  # initialize Kalman filter object
         f.x = np.array([[car1_initpos],  # position
                         [car1_vel]])  # velocity
-        f.F = np.array([[1.0, 1.0],
+        f.F = np.array([[1.0, 1.0],  # state transition matrix
                         [0.0, 1.0]])
-        f.H = np.array([[1.0, 0.0]])
-        f.P = np.array([[1000.0, 0.0],
+        f.H = np.array([[1.0, 0.0]])  # measurement function
+        f.P = np.array([[1000.0, 0.0],  # aprioori state covariance
                         [0.0, 1000.0]])
-        f.R = np.array([[5.0]])
+        f.R = np.array([[5.0]])  # measurement noise covariance
         f.Q = Q_discrete_white_noise(dim=2, dt=dt, var=PN**2)  # Process noise
         
         # Loop for updating positions
@@ -197,8 +197,8 @@ def modify_doc(doc):
             z = np.random.normal(pos1real, MN)
     
             # Kalman Filter predict and update steps
-            f.predict()
-            f.update(z)   
+            f.predict()  # predict next state using Kalman filter state propagation equation
+            f.update(z)  # add new measurement (z) to the Kalman filter 
    
             # Following car update without Kalman Filter
             dx = z - pos2
