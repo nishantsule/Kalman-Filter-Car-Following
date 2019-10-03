@@ -134,8 +134,8 @@ def modify_doc(doc):
     p6.toolbar_location = None
 
     # Setup widgets
-    procnoise_slider = Slider(title='Process Noise', value=0.5, start=0.1, end=1.5, step=0.1)
-    measnoise_slider = Slider(title='Measurement Noise', value=0.5, start=0.1, end=1.5, step=0.1)
+    procnoise_slider = Slider(title='Process Noise', value=0.0, start=0.0, end=1.5, step=0.1)
+    measnoise_slider = Slider(title='Measurement Noise', value=0.0, start=0.0, end=1.5, step=0.1)
     TextDisp = Div(text='''<b>Note:</b> Wait for the plots to stop updating before hitting Start.''')
     TextDesc = Div(text='''This simulation shows how Kalman Filtering can be used to improve autonomous car following. 
                    The red car uses a Kalman filter to filter out noise inherent in the detection of the car in the front.
@@ -168,10 +168,17 @@ def modify_doc(doc):
         nlim = max(PN, MN)
         global noiserange, pdf_proc, pdf_meas
         noiserange = np.linspace(-4 * nlim, 4 * nlim, timesteps)
-        pdf_proc = 1 / (PN * np.sqrt(2 * np.pi)) * np.exp(-noiserange**2 / (2 * PN**2))
+        if PN == 0:
+            pdf_proc = np.zeros(np.shape(noiserange))
+        else:
+            pdf_proc = 1 / (PN * np.sqrt(2 * np.pi)) * np.exp(-noiserange**2 / (2 * PN**2))
+        if MN == 0:
+            pdf_meas = np.zeros(np.shape(noiserange))
+        else:
+            pdf_meas = 1 / (MN * np.sqrt(2 * np.pi)) * np.exp(-noiserange**2 / (2 * MN**2))
+        
         r21.data_source.data['x'] = noiserange
         r21.data_source.data['y'] = pdf_proc
-        pdf_meas = 1 / (MN * np.sqrt(2 * np.pi)) * np.exp(-noiserange**2 / (2 * MN**2))
         r22.data_source.data['x'] = noiserange
         r22.data_source.data['y'] = pdf_meas
         
@@ -182,10 +189,14 @@ def modify_doc(doc):
         f.F = np.array([[1.0, 1.0],  # state transition matrix
                         [0.0, 1.0]])
         f.H = np.array([[1.0, 0.0]])  # measurement function
-        f.P = np.array([[1000.0, 0.0],  # aprioori state covariance
+        f.P = np.array([[1000.0, 0.0],  # apriori state covariance
                         [0.0, 1000.0]])
         f.R = np.array([[5.0]])  # measurement noise covariance
-        f.Q = Q_discrete_white_noise(dim=2, dt=dt, var=PN**2)  # Process noise
+        # Process noise
+        if PN == 0:
+            f.Q = np.zeros([2, 2])
+        else:
+            f.Q = Q_discrete_white_noise(dim=2, dt=dt, var=PN**2)  
         
         # Loop for updating positions
         for tt in range(timesteps):        
@@ -247,7 +258,7 @@ def modify_doc(doc):
             car2_acc[tt] = acc2
             car2_acc_kf[tt] = acc2_kf
 
-            # Update plots
+            # Update plots (both cars)
             #first row
             r31.data_source.data['x'] = [pos1real, pos2, pos2_kf]
             r32.data_source.data['x'] = [pos1real - car_size / 2, pos1real - car_size / 2]
@@ -271,6 +282,23 @@ def modify_doc(doc):
             r61.data_source.data['y'] = car2_acc
             r62.data_source.data['x'] = timepoints
             r62.data_source.data['y'] = car2_acc_kf
+            
+#             # Update plots (only car without KF)
+#             #first row
+#             r31.data_source.data['x'] = [pos1real, pos2, 0]
+#             r32.data_source.data['x'] = [pos1real - car_size / 2, pos1real - car_size / 2]
+#             r33.data_source.data['x'] = [pos1real + car_size / 2 - dist_sep, pos1real + car_size / 2 - dist_sep]
+#             #second row
+#             r41.data_source.data['x'] = timepoints
+#             r41.data_source.data['y'] = poscar1
+#             r42.data_source.data['x'] = timepoints
+#             r42.data_source.data['y'] = poscar1_meas
+#             r44.data_source.data['x'] = timepoints
+#             r44.data_source.data['y'] = poscar2
+#             r51.data_source.data['x'] = timepoints
+#             r51.data_source.data['y'] = car_sep
+#             r61.data_source.data['x'] = timepoints
+#             r61.data_source.data['y'] = car2_acc
     
             time.sleep(0.05)
 
